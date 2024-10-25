@@ -1,12 +1,17 @@
 const mongoose = require('mongoose');
 const Holder = require("../models/holders");
+const bcryptjs = require("bcryptjs")
+const token = require("../Middlewares/validar-JWT");
+const { generarJWT } = require("../Middlewares/validar-JWT")
+
 
 const httpholders = {
     // añadir
     postholder: async (req, res) => {
         try {
             const { email, password, document, name, rol, ficha, photo, phone, state } = req.body;
-            const holder = new Holder({ email, password, document, name, rol, ficha, photo, phone, state });
+            const hashedPassword = bcryptjs.hashSync(password,10)
+            const holder = new Holder({ email, password:hashedPassword, document, name, rol, ficha, photo, phone, state });
             await holder.save();
             res.json({ holder });
         } catch (error) {
@@ -133,7 +138,40 @@ const httpholders = {
             res.status(400).json({ error: "La operación no se realizó correctamente", details: error.message });
             console.log("Error al eliminar holder:", error);
         }
+    },
+
+    Postlogin: async (req, res) => {
+        const { email, password } = req.body;
+        try {
+            const holder = await Holder.findOne({ email })
+            if (!holder) {
+                return res.status(400).json({
+                    msg: "Holder / Password no son correctos"
+                })
+            }
+            if (holder.estado === 0) {
+                return res.status(400).json({
+                    msg: "Holder Inactivo"
+                })
+            }
+            const validPassword = bcryptjs.compareSync(password, holder.password);
+            if (!validPassword) {
+                return res.status(400).json({
+                    msg: "Holder / Password no son correctos"
+                })
+            }
+            const token = await generarJWT(holder.id);
+            res.json({
+                holder,
+                token
+            })
+        } catch (error) {
+            return res.status(500).json({
+                msg: "Hable con el WebMaster"
+            })
+        }
     }
 }
+
 
 module.exports = httpholders;

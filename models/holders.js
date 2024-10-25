@@ -9,7 +9,7 @@ const holderSchema= new mongoose.Schema(
     ficha:{type:String},
     photo:{type:String},
     phone:{type:String,required:true}, 
-    state:{type:String,default:1},
+    state:{type:String,default:"1"},
    },
    {
     timestamps:true,

@@ -13,9 +13,6 @@ app.use ("/api/laptop",laptops)
 app.use ("/api/entry",entrys)
 
 
-
-
-
 app.listen(process.env.PORT,()=>{
     console.log(`Servidor escuchando en el puerto ${process.env.PORT}`);
     mongoose.connect(process.env.CNX_MONGO)
